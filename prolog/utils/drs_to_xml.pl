@@ -63,24 +63,21 @@ drs_to_xmlterm(drs(Dom, Conds), element('DRS', [domain=DomC], Content)) :-
 %% write_nv(+Arg, +Term) is det
 %
 % Writes Term onto the standard output. The variable representations
-% '$VAR'(_) are printed as capital letters A, B, C, etc. Together with the
-% format_predicate declaration, this allows us to use the placeholder '~v'
-% in format/3.
+% '$VAR'(_) are printed as capital letters A, B, C, etc.
 
 write_nv(_, Term) :-
     write_term(Term, [numbervars(true), quoted(true)]).
-
-% '~v' in format/3 is used to pretty print variables.
-:- format_predicate(v, write_nv(_Arg, _Term)).
 
 
 %% convert(+Term, -Atom) is det
 %
 % Converts Term into an atom. The variable representations '$VAR'(_) are
-% pretty printed as capital letters.
+% pretty printed as capital letters. Captures write_nv/2 output directly:
+% format_predicate/2 registrations do not survive qsave state restore on
+% SWI-Prolog >= 10, so the custom '~v' format directive cannot be used.
 
 convert(In, Out) :-
-    format(atom(Out), '~v', [In]).
+    with_output_to(atom(Out), write_nv(_, In)).
 
 
 %% convert_vars(+VarList, -Atom) is det
